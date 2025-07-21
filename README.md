@@ -50,25 +50,7 @@ cd ../server
 npm install
 ```
 
-### 3. Set up environment variables
-
-#### Backend
-
-Create a `.env` file in the `server/` directory with the following:
-
-```
-MONGO_URI=your_mongodb_connection_string
-FIREBASE_API_KEY=your_firebase_api_key
-FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
-# Add other Firebase config as needed
-JWT_SECRET=your_jwt_secret
-```
-
-#### Frontend
-
-Update `client/src/firebase.js` with your Firebase config.
-
-### 4. Run the application
+### 3. Run the application
 
 #### Backend
 
@@ -81,25 +63,12 @@ npm start
 
 ```bash
 cd client
-npm start
+npm run build && npm run start
 ```
 
-The frontend will run on [http://localhost:3000](http://localhost:3000) and the backend on [http://localhost:5000](http://localhost:5000) by default.
+# Links
+### Frontend
 
-## Scripts
 
-- `npm start` — Start the development server
-- `npm run build` — Build for production
-- `npm test` — Run tests
-
-## Folder Structure
-
-- `client/` — React app (frontend)
-- `server/` — Express app (backend)
-  - `controllers/` — Route controllers
-  - `models/` — Mongoose models
-  - `routes/` — API routes
-
-## License
-
-[MIT](LICENSE)
+### Backend
+Hosted with render at : https://edu-wis-backend.onrender.com

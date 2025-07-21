@@ -13,24 +13,17 @@ function Register() {
 
   const handleRegister = async () => {
     try {
-      // Create user in Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-
-      // Update user profile with displayName
       await updateProfile(user, { displayName });
-
-      // Send user data to backend to save in MongoDB
       const idToken = await user.getIdToken();
       await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
         uid: user.uid,
         email: user.email,
         displayName,
-        isAdmin: false, // Default to false, adjust based on your logic
       }, {
         headers: { Authorization: `Bearer ${idToken}` }
       });
-
       console.log('User registered');
       navigate('/dashboard');
     } catch (error) {

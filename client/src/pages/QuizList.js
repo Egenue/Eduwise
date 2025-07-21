@@ -1,21 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
 
-const QuizList = () => {
+function QuizList() {
   const [quizzes, setQuizzes] = useState([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchQuizzes = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:5000/api/quizzes', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setQuizzes(res.data);
-      } catch (err) {
-        setError('Failed to fetch quizzes');
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/quizzes`);
+        setQuizzes(response.data);
+      } catch (error) {
+        setError(error.message);
+        console.error('Error fetching quizzes:', error);
       }
     };
     fetchQuizzes();
@@ -24,16 +21,18 @@ const QuizList = () => {
   return (
     <div style={{ maxWidth: 600, margin: 'auto', padding: 20 }}>
       <h2>Available Quizzes</h2>
-      {error && <div style={{ color: 'red' }}>{error}</div>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
       <ul>
         {quizzes.map(quiz => (
           <li key={quiz._id}>
-            <Link to={`/quiz/${quiz._id}`}>{quiz.title}</Link>
+            <h3>{quiz.title}</h3>
+            <p>{quiz.description}</p>
+            <p>Questions: {quiz.questions.length}</p>
           </li>
         ))}
       </ul>
     </div>
   );
-};
+}
 
-export default QuizList; 
+export default QuizList;

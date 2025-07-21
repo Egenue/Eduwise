@@ -5,7 +5,6 @@ const mongoose = require('mongoose');
 
 const User = mongoose.model('User');
 
-// Middleware to verify Firebase token
 const verifyToken = async (req, res, next) => {
   const idToken = req.headers.authorization?.split('Bearer ')[1];
   if (!idToken) return res.status(401).json({ error: 'Unauthorized' });

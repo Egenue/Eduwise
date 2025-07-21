@@ -1,77 +1,104 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { auth } from '../firebase';
 import axios from 'axios';
 
-const AdminQuizCreate = () => {
+function AdminQuizCreate() {
   const [title, setTitle] = useState('');
-  const [questions, setQuestions] = useState([
-    { question: '', options: ['', '', '', ''], correctAnswer: 0 }
-  ]);
-  const [message, setMessage] = useState('');
+  const [description, setDescription] = useState('');
+  const [questions, setQuestions] = useState([{ questionText: '', options: ['', '', '', ''], correctAnswer: '' }]);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  const handleQuestionChange = (idx, field, value) => {
-    const updated = [...questions];
-    if (field === 'question') updated[idx].question = value;
-    else if (field.startsWith('option')) updated[idx].options[parseInt(field.slice(-1))] = value;
-    else if (field === 'correctAnswer') updated[idx].correctAnswer = parseInt(value);
-    setQuestions(updated);
+  const handleAddQuestion = () => {
+    setQuestions([...questions, { questionText: '', options: ['', '', '', ''], correctAnswer: '' }]);
   };
 
-  const addQuestion = () => {
-    setQuestions([...questions, { question: '', options: ['', '', '', ''], correctAnswer: 0 }]);
+  const handleQuestionChange = (index, field, value) => {
+    const newQuestions = [...questions];
+    newQuestions[index][field] = value;
+    setQuestions(newQuestions);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setMessage('');
+  const handleOptionChange = (questionIndex, optionIndex, value) => {
+    const newQuestions = [...questions];
+    newQuestions[questionIndex].options[optionIndex] = value;
+    setQuestions(newQuestions);
+  };
+
+  const handleSubmit = async () => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/quizzes', { title, questions }, {
-        headers: { Authorization: `Bearer ${token}` }
+      const idToken = await auth.currentUser.getIdToken();
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/quizzes`, {
+        title,
+        description,
+        questions,
+        createdBy: auth.currentUser.uid,
+      }, {
+        headers: { Authorization: `Bearer ${idToken}` }
       });
-      setMessage('Quiz created!');
-      setTitle('');
-      setQuestions([{ question: '', options: ['', '', '', ''], correctAnswer: 0 }]);
-    } catch (err) {
-      setMessage('Failed to create quiz');
+      navigate('/admin/quizzes');
+    } catch (error) {
+      setError(error.response?.data?.error || error.message);
+      console.error('Quiz creation error:', error);
     }
   };
 
   return (
-    <div style={{ maxWidth: 700, margin: 'auto', padding: 20 }}>
-      <h2>Create New Quiz</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Quiz Title:</label>
-          <input value={title} onChange={e => setTitle(e.target.value)} required />
-        </div>
-        {questions.map((q, idx) => (
-          <div key={idx} style={{ border: '1px solid #ccc', margin: 10, padding: 10 }}>
-            <label>Question {idx + 1}:</label>
-            <input value={q.question} onChange={e => handleQuestionChange(idx, 'question', e.target.value)} required style={{ width: '90%' }} />
-            <div>
-              {q.options.map((opt, oidx) => (
-                <span key={oidx}>
-                  <label>Option {oidx + 1}:</label>
-                  <input value={opt} onChange={e => handleQuestionChange(idx, 'option' + oidx, e.target.value)} required />
-                </span>
-              ))}
-            </div>
-            <div>
-              <label>Correct Answer:</label>
-              <select value={q.correctAnswer} onChange={e => handleQuestionChange(idx, 'correctAnswer', e.target.value)}>
-                {q.options.map((_, oidx) => (
-                  <option key={oidx} value={oidx}>Option {oidx + 1}</option>
-                ))}
-              </select>
-            </div>
+    <div style={{ maxWidth: 600, margin: 'auto', padding: 20 }}>
+      <h2>Create Quiz</h2>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <div>
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Quiz Title"
+          style={{ display: 'block', margin: '10px 0', width: '100%' }}
+        />
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Quiz Description"
+          style={{ display: 'block', margin: '10px 0', width: '100%' }}
+        />
+        {questions.map((q, index) => (
+          <div key={index} style={{ margin: '20px 0' }}>
+            <input
+              type="text"
+              value={q.questionText}
+              onChange={(e) => handleQuestionChange(index, 'questionText', e.target.value)}
+              placeholder={`Question ${index + 1}`}
+              style={{ display: 'block', margin: '10px 0', width: '100%' }}
+            />
+            {q.options.map((opt, optIndex) => (
+              <input
+                key={optIndex}
+                type="text"
+                value={opt}
+                onChange={(e) => handleOptionChange(index, optIndex, e.target.value)}
+                placeholder={`Option ${optIndex + 1}`}
+                style={{ display: 'block', margin: '5px 0', width: '100%' }}
+              />
+            ))}
+            <input
+              type="text"
+              value={q.correctAnswer}
+              onChange={(e) => handleQuestionChange(index, 'correctAnswer', e.target.value)}
+              placeholder="Correct Answer"
+              style={{ display: 'block', margin: '10px 0', width: '100%' }}
+            />
           </div>
         ))}
-        <button type="button" onClick={addQuestion}>Add Question</button>
-        <button type="submit">Create Quiz</button>
-      </form>
-      {message && <div style={{ marginTop: 10 }}>{message}</div>}
+        <button onClick={handleAddQuestion} style={{ margin: '10px 0' }}>
+          Add Question
+        </button>
+        <button onClick={handleSubmit} style={{ margin: '10px', width: '100%' }}>
+          Create Quiz
+        </button>
+      </div>
     </div>
   );
-};
+}
 
-export default AdminQuizCreate; 
+export default AdminQuizCreate;

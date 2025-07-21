@@ -27,23 +27,21 @@ const verifyToken = async (req, res, next) => {
 
 // Register route
 router.post('/register', verifyToken, async (req, res) => {
-  const { uid, email, displayName, isAdmin } = req.body;
-  try {
-    // Verify the token belongs to the same user
-    if (req.user.uid !== uid) {
-      return res.status(403).json({ error: 'Forbidden: UID mismatch' });
+    const { uid, email, displayName } = req.body;
+    try {
+      if (req.user.uid !== uid) {
+        return res.status(403).json({ error: 'Forbidden: UID mismatch' });
+      }
+      const isAdmin = email === 'admin@example.com'; // Set admin for specific email
+      const user = await User.findOneAndUpdate(
+        { uid },
+        { uid, email, displayName, isAdmin, createdAt: new Date() },
+        { upsert: true, new: true }
+      );
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
     }
-
-    // Save or update user in MongoDB
-    const user = await User.findOneAndUpdate(
-      { uid },
-      { uid, email, displayName, isAdmin },
-      { upsert: true, new: true }
-    );
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+  });
 
 module.exports = router;
