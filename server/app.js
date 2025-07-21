@@ -11,11 +11,11 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors({ origin: 'http://https://eduwise-d120.onrender.com:3000' }));
+app.use(cors({ origin: 'https://eduwise-d120.onrender.com' }));
 app.use(express.json());
 
 // Initialize Firebase Admin
-const serviceAccount = require('./serviceAccountKey.json'); // Update to your actual file name
+const serviceAccount = require('./eduwise-962f3-firebase-adminsdk-fbsvc-46bc61b121.json'); // Update to your actual file name
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
