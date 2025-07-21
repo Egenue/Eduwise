@@ -22,14 +22,16 @@ const Dashboard = () => {
           });
 
         // Fetch user data
-        axios.get(`${process.env.REACT_APP_API_URL}/api/users/${user.uid}`)
+        axios.get(`${process.env.REACT_APP_API_URL}/api/users/${user.uid}`, {
+          headers: { Authorization: `Bearer ${idToken}` }
+        })
           .then(res => {
             setUserData(res.data);
             setIsAdmin(res.data.isAdmin || false);
           })
           .catch(err => {
-            console.error('Error fetching user data:', err);
-            setFetchError('Failed to fetch user data');
+            console.error('Error fetching user data:', err.message);
+            setFetchError('Failed to fetch user data: ' + err.message);
           });
       });
     }

@@ -8,37 +8,38 @@ const quizRoutes = require('./routes/quiz');
 const userRoutes = require('./routes/user');
 
 dotenv.config();
+if (!process.env.MONGO_URI) {
+  console.error('Error: MONGO_URI is not defined in .env file');
+  process.exit(1);
+}
+
 const app = express();
 
-// Middleware
-app.use(cors({ origin: 'https://eduwise-d120.onrender.com' }));
+app.use(cors({
+  origin: ['http://localhost:3000', 'https://edu-wis-frontend.onrender.com'],
+}));
 app.use(express.json());
 
-// Initialize Firebase Admin
-const serviceAccount = require('./eduwise-962f3-firebase-adminsdk-fbsvc-46bc61b121.json'); // Update to your actual file name
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+const serviceAccount = require('./serviceAccountKey.json');
+admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 
-// Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
   .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+  .catch(err => {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+  });
 
-// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/users', userRoutes);
 
-// Verify Firebase token
 app.post('/api/verify-token', async (req, res) => {
   const { idToken } = req.body;
-  if (!idToken) {
-    return res.status(400).json({ error: 'ID token is required' });
-  }
+  if (!idToken) return res.status(400).json({ error: 'ID token is required' });
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     res.json({ uid: decodedToken.uid, email: decodedToken.email });
@@ -47,7 +48,6 @@ app.post('/api/verify-token', async (req, res) => {
   }
 });
 
-// Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
   res.status(500).json({ error: 'Internal server error' });
