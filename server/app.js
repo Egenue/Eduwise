@@ -20,7 +20,7 @@ if (!process.env.MONGO_URL) {
 const app = express();
 
 const corsOptions = {
-  origin: ['http://localhost:3000', 'https://eduwise-d120.onrender.com'],
+  origin: ['http://localhost:3000', 'https://edu-wis-frontend.onrender.com'],
   credentials: true,
 };
 
