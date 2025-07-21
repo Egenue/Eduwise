@@ -8,7 +8,7 @@ const quizSchema = new mongoose.Schema({
     options: [{ type: String, required: true }],
     correctAnswer: { type: String, required: true },
   }],
-  createdBy: { type: String, required: true }, // Firebase UID of creator
+  createdBy: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
 });
 

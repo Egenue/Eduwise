@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const admin = require('firebase-admin');
 const mongoose = require('mongoose');
+require('../models/Quiz'); // Ensure Quiz schema is registered
 const { fetchOpenTDBQuestions } = require('../services/opentdbService');
 
 const Quiz = mongoose.model('Quiz');
