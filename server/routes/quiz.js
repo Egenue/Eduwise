@@ -23,6 +23,23 @@ const verifyAdmin = async (req, res, next) => {
   }
 };
 
+router.post('/opentdb', verifyAdmin, async (req, res) => {
+  const { amount = 10, category, difficulty, type } = req.body;
+  try {
+    const questions = await fetchOpenTDBQuestions({ amount, category, difficulty, type });
+    const quiz = new Quiz({
+      title: `OpenTDB ${category ? `Category ${category}` : 'Trivia'} ${difficulty || ''}`,
+      description: `Quiz fetched from OpenTDB with ${amount} ${type || 'mixed'} questions`,
+      questions,
+      createdBy: req.user.uid,
+    });
+    await quiz.save();
+    res.status(201).json(quiz);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.post('/', verifyAdmin, async (req, res) => {
   const { title, description, questions } = req.body;
   try {
@@ -55,41 +72,6 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Quiz not found' });
     }
     res.json(quiz);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// POST /opentdb/import - Admin only: Import quiz from OpenTDB and save to DB
-router.post('/opentdb/import', verifyAdmin, async (req, res) => {
-  try {
-    const { amount = 10, category, difficulty, type, title, description } = req.body;
-    const opentdbQuestions = await fetchOpenTDBQuestions(amount, category, difficulty, type);
-    if (!opentdbQuestions || opentdbQuestions.length === 0) {
-      return res.status(400).json({ error: 'No questions fetched from OpenTDB' });
-    }
-    // Map OpenTDB questions to Quiz schema
-    const questions = opentdbQuestions.map(q => {
-      const options = [...q.incorrect_answers, q.correct_answer];
-      // Shuffle options
-      for (let i = options.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [options[i], options[j]] = [options[j], options[i]];
-      }
-      return {
-        questionText: q.question,
-        options,
-        correctAnswer: q.correct_answer,
-      };
-    });
-    const quiz = new Quiz({
-      title: title || 'OpenTDB Quiz',
-      description: description || 'Imported from OpenTDB',
-      questions,
-      createdBy: req.user.uid,
-    });
-    await quiz.save();
-    res.status(201).json(quiz);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -11,12 +11,11 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-    e.preventDefault(); // Prevent form submission refresh
+    e.preventDefault();
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       const idToken = await user.getIdToken();
-      // Sync user data with MongoDB
       await axios.post(
         `${process.env.REACT_APP_API_URL}/api/auth/login`,
         {

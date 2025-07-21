@@ -11,19 +11,22 @@ function Register() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const handleRegister = async () => {
+  const handleRegister = async (e) => {
+    e.preventDefault();
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       await updateProfile(user, { displayName });
       const idToken = await user.getIdToken();
-      await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
-        uid: user.uid,
-        email: user.email,
-        displayName,
-      }, {
-        headers: { Authorization: `Bearer ${idToken}` }
-      });
+      await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/auth/register`,
+        {
+          uid: user.uid,
+          email: user.email,
+          displayName,
+        },
+        { headers: { Authorization: `Bearer ${idToken}` } }
+      );
       console.log('User registered');
       navigate('/dashboard');
     } catch (error) {
@@ -37,32 +40,44 @@ function Register() {
       <div style={{ width: 300 }}>
         <h2>Register</h2>
         {error && <p style={{ color: 'red' }}>{error}</p>}
-        <div>
-          <input
-            type="text"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="Name"
-            style={{ display: 'block', margin: '10px 0', width: '100%' }}
-          />
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
-            style={{ display: 'block', margin: '10px 0', width: '100%' }}
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            style={{ display: 'block', margin: '10px 0', width: '100%' }}
-          />
-          <button onClick={handleRegister} style={{ width: '100%' }}>
+        <form onSubmit={handleRegister}>
+          <div>
+            <label>Name:</label>
+            <input
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="Name"
+              style={{ display: 'block', margin: '10px 0', width: '100%' }}
+              required
+            />
+          </div>
+          <div>
+            <label>Email:</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email"
+              style={{ display: 'block', margin: '10px 0', width: '100%' }}
+              required
+            />
+          </div>
+          <div>
+            <label>Password:</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              style={{ display: 'block', margin: '10px 0', width: '100%' }}
+              required
+            />
+          </div>
+          <button type="submit" style={{ width: '100%', margin: '10px 0' }}>
             Register
           </button>
-        </div>
+        </form>
       </div>
     </div>
   );

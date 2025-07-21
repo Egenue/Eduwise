@@ -8,8 +8,8 @@ const quizRoutes = require('./routes/quiz');
 const userRoutes = require('./routes/user');
 
 dotenv.config();
-if (!process.env.MONGO_URI) {
-  console.error('Error: MONGO_URI is not defined in .env file');
+if (!process.env.MONGO_URL) {
+  console.error('Error: MONGO_URL is not defined in .env file');
   process.exit(1);
 }
 
@@ -23,7 +23,7 @@ app.use(express.json());
 const serviceAccount = require('./serviceAccountKey.json');
 admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 
-mongoose.connect(process.env.MONGO_URI, {
+mongoose.connect(process.env.MONGO_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
@@ -36,17 +36,6 @@ mongoose.connect(process.env.MONGO_URI, {
 app.use('/api/auth', authRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/users', userRoutes);
-
-app.post('/api/verify-token', async (req, res) => {
-  const { idToken } = req.body;
-  if (!idToken) return res.status(400).json({ error: 'ID token is required' });
-  try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    res.json({ uid: decodedToken.uid, email: decodedToken.email });
-  } catch (error) {
-    res.status(401).json({ error: error.message });
-  }
-});
 
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
