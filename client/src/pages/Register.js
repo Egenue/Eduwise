@@ -1,48 +1,78 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { auth } from '../firebase';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import axios from 'axios';
 
-const Register = () => {
-  const [name, setName] = useState('');
+function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
+  const handleRegister = async () => {
     try {
-      await axios.post('http://localhost:5000/api/auth/register', { name, email, password });
-      setSuccess('Registration successful! You can now log in.');
-      setName(''); setEmail(''); setPassword('');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      // Create user in Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Update user profile with displayName
+      await updateProfile(user, { displayName });
+
+      // Send user data to backend to save in MongoDB
+      const idToken = await user.getIdToken();
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/register`, {
+        uid: user.uid,
+        email: user.email,
+        displayName,
+        isAdmin: false, // Default to false, adjust based on your logic
+      }, {
+        headers: { Authorization: `Bearer ${idToken}` }
+      });
+
+      console.log('User registered');
+      navigate('/dashboard');
+    } catch (error) {
+      setError(error.message);
+      console.error('Registration error:', error.message);
     }
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: 'auto', padding: 20 }}>
-      <h2>Register</h2>
-      <form onSubmit={handleSubmit}>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <div style={{ width: 300 }}>
+        <h2>Register</h2>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
         <div>
-          <label>Name:</label>
-          <input type="text" value={name} onChange={e => setName(e.target.value)} required />
+          <input
+            type="text"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            placeholder="Name"
+            style={{ display: 'block', margin: '10px 0', width: '100%' }}
+          />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            style={{ display: 'block', margin: '10px 0', width: '100%' }}
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            style={{ display: 'block', margin: '10px 0', width: '100%' }}
+          />
+          <button onClick={handleRegister} style={{ width: '100%' }}>
+            Register
+          </button>
         </div>
-        <div>
-          <label>Email:</label>
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-        </div>
-        <div>
-          <label>Password:</label>
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
-        </div>
-        {error && <div style={{ color: 'red' }}>{error}</div>}
-        {success && <div style={{ color: 'green' }}>{success}</div>}
-        <button type="submit">Register</button>
-      </form>
+      </div>
     </div>
   );
-};
+}
 
-export default Register; 
+export default Register;
