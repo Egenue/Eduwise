@@ -19,9 +19,13 @@ if (!process.env.MONGO_URL) {
 
 const app = express();
 
-app.use(cors({
-  origin: ['http://localhost:3000', 'https://edu-wis-frontend.onrender.com'],
-}));
+const corsOptions = {
+  origin: ['http://localhost:3000', 'https://eduwise-d120.onrender.com'],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json());
 
 // Initialize Firebase Admin
