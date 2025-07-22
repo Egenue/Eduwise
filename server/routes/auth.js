@@ -2,16 +2,8 @@ const express = require('express');
 const router = express.Router();
 const admin = require('firebase-admin');
 const mongoose = require('mongoose');
+const User = require('../models/User');
 
-// Define User schema
-const userSchema = new mongoose.Schema({
-  uid: { type: String, required: true, unique: true },
-  email: { type: String, required: true },
-  displayName: String,
-  isAdmin: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now },
-});
-const User = mongoose.model('User', userSchema);
 
 // Middleware to verify Firebase token
 const verifyToken = async (req, res, next) => {
@@ -43,5 +35,17 @@ router.post('/register', verifyToken, async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   });
+
+router.post('/login', async (req, res) => {
+  const { idToken } = req.body;
+  if (!idToken) return res.status(400).json({ error: 'No ID token provided' });
+  try {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    // Optionally, find or create the user in your DB here
+    res.json({ uid: decodedToken.uid, email: decodedToken.email });
+  } catch (error) {
+    res.status(401).json({ error: error.message });
+  }
+});
 
 module.exports = router;
