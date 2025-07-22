@@ -68,7 +68,7 @@ npm run build && npm run start
 
 # Links
 ### Frontend
-
+Hosted with render at : https://eduwise-1-s0ex.onrender.com
 
 ### Backend
 Hosted with render at : https://edu-wis-backend.onrender.com
