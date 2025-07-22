@@ -33,7 +33,9 @@ mongoose.connect(process.env.MONGO_URL, {
 
 
 const corsOptions = {
-  origin: ['http://localhost:3000', 'https://eduwise-1-s0ex.onrender.com'],
+  origin: [ 'http://localhost:3000',
+    'https://eduwise-d120.onrender.com',
+    'https://eduwise-1-s0ex.onrender.com' ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
