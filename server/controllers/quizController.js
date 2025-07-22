@@ -1,6 +1,7 @@
 const Quiz = require('../models/Quiz');
 const Result = require('../models/Result');
 const jwt = require('jsonwebtoken');
+const { fetchOpenTDBQuestions } = require('../services/opentdbService');
 
 exports.getAllQuizzes = async (req, res) => {
   try {
@@ -106,5 +107,23 @@ exports.deleteQuiz = async (req, res) => {
     res.json({ message: 'Quiz deleted' });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.importOpenTDBQuiz = async (req, res) => {
+  try {
+    const { amount = 10, category, difficulty, type } = req.body;
+    // req.user is set by verifyAdmin middleware
+    const questions = await fetchOpenTDBQuestions({ amount, category, difficulty, type });
+    const quiz = new Quiz({
+      title: `OpenTDB ${category ? `Category ${category}` : 'Trivia'} ${difficulty || ''}`,
+      description: `Quiz fetched from OpenTDB with ${amount} ${type || 'mixed'} questions`,
+      questions,
+      createdBy: req.user.uid,
+    });
+    await quiz.save();
+    res.status(201).json(quiz);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 }; 

@@ -2,8 +2,9 @@ const express = require('express');
 const router = express.Router();
 const admin = require('firebase-admin');
 const mongoose = require('mongoose');
-require('../models/Quiz'); // Ensure Quiz schema is registered
+require('../models/Quiz');
 const { fetchOpenTDBQuestions } = require('../services/opentdbService');
+const quizController = require('../controllers/quizController');
 
 const Quiz = mongoose.model('Quiz');
 const User = mongoose.model('User');
@@ -24,22 +25,7 @@ const verifyAdmin = async (req, res, next) => {
   }
 };
 
-router.post('/opentdb', verifyAdmin, async (req, res) => {
-  const { amount = 10, category, difficulty, type } = req.body;
-  try {
-    const questions = await fetchOpenTDBQuestions({ amount, category, difficulty, type });
-    const quiz = new Quiz({
-      title: `OpenTDB ${category ? `Category ${category}` : 'Trivia'} ${difficulty || ''}`,
-      description: `Quiz fetched from OpenTDB with ${amount} ${type || 'mixed'} questions`,
-      questions,
-      createdBy: req.user.uid,
-    });
-    await quiz.save();
-    res.status(201).json(quiz);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.post('/opentdb', verifyAdmin, quizController.importOpenTDBQuiz);
 
 router.post('/', verifyAdmin, async (req, res) => {
   const { title, description, questions } = req.body;
