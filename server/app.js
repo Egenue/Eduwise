@@ -9,6 +9,17 @@ if (!admin.apps.length) {
 require('dotenv').config();
 const app = express();
 
+const corsOptions = {
+  origin: [
+    'http://localhost:3000',
+    'https://eduwise-d120.onrender.com',
+    'https://eduwise-1-s0ex.onrender.com'
+  ],
+  credentials: true,
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
 const authRoutes = require('./routes/auth');
 const quizRoutes = require('./routes/quiz');
 const userRoutes = require('./routes/user');
@@ -30,24 +41,6 @@ mongoose.connect(process.env.MONGO_URL, {
     console.error('MongoDB connection error:', err);
     process.exit(1);
   });
-
-
-const corsOptions = {
-  origin: [
-    'http://localhost:3000',
-    'https://eduwise-d120.onrender.com',
-    'https://eduwise-1-s0ex.onrender.com'
-  ],
-  credentials: true,
-};
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
-
-
-// app.use((err, req, res, next) => {
-//   console.error('Server error:', err);
-//   res.status(500).json({ error: 'Internal server error' });
-// });
 
 const PORT = process.env.PORT;
 app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
