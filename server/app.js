@@ -20,6 +20,9 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 const authRoutes = require('./routes/auth');
 const quizRoutes = require('./routes/quiz');
 const userRoutes = require('./routes/user');
@@ -27,10 +30,6 @@ const userRoutes = require('./routes/user');
 app.use('/api/auth', authRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/users', userRoutes);
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
 
 mongoose.connect(process.env.MONGO_URL, {
   useNewUrlParser: true,
