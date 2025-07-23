@@ -9,13 +9,20 @@ if (!admin.apps.length) {
 require('dotenv').config();
 const app = express();
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://eduwise-d120.onrender.com',
+  'https://eduwise-1-s0ex.onrender.com'
+];
+
 const corsOptions = {
-  origin: [
-    'http://localhost:3000',
-    'https://eduwise-d120.onrender.com',
-    'https://eduwise-1-s0ex.onrender.com'
-  ],
-  origin: true,
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 };
 app.use(cors(corsOptions));
