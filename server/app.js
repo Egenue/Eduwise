@@ -15,6 +15,7 @@ const corsOptions = {
     'https://eduwise-d120.onrender.com',
     'https://eduwise-1-s0ex.onrender.com'
   ],
+  origin: true,
   credentials: true,
 };
 app.use(cors(corsOptions));
