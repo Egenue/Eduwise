@@ -15,6 +15,15 @@ const allowedOrigins = [
   'https://eduwise-1-s0ex.onrender.com'
 ];
 
+app.use((req, res, next) => {
+  console.log('CORS middleware ran for:', req.method, req.path);
+  next();
+});
+
+app.options('/api/auth/login', (req, res) => {
+  res.send('CORS preflight OK');
+});
+
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -25,6 +34,7 @@ const corsOptions = {
   },
   credentials: true,
 };
+
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
